@@ -1,20 +1,36 @@
 
 import sys
+import os
 from functools import partial
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QKeySequence
-from PyQt5.QtWidgets import (
-    QAction,
-    QApplication,
-    QLabel,
-    QMainWindow,
-    QMenu,
-    QSpinBox,
-    QToolBar,
-)
+
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtWidgets import*
+
 
 import qrc_resources
+
+from Lexer import BasicLexer
+from Parser import BasicParser
+from BasicExecute import BasicExecute
+
+sys.path.append("BasicExecute")
+import BasicExecute as ResultadoF
+
+
+dirPath = os.chdir(os.getcwd())
+class Ventana(QDialog):
+	def __init__(self):
+		QDialog.__init__(self)
+		self.resize(200, 200)
+		print("En resultado hay", ResultadoF.Resultado)
+		self.txtcmd = QTextEdit(self)
+		self.txtcmd.setText(ResultadoF.Resultado)
+		self.txtcmd.setDisabled(True)
+		self.txtcmd.setStyleSheet("background-color : black")
+
 
 
 class Window(QMainWindow):
@@ -24,20 +40,37 @@ class Window(QMainWindow):
         """Initializer."""
         super().__init__(parent)
         self.setWindowTitle("Átón lenguaje")
-        self.resize(400, 200)
-        self.centralWidget = QLabel("Bienvenidos al mejor lenguaje")
-        self.centralWidget.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.setCentralWidget(self.centralWidget)
+        self.resize(1000, 800)
+
+        self.txtTextoEditado = QTextEdit(self)
+        self.txtTextoEditado.setPlaceholderText("Escriba el codigo")
+        #self.txtTextoEditado.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.setCentralWidget(self.txtTextoEditado)
+
+
+        #self.centralWidget = QLabel("Bienvenidos al mejor lenguaje")
+        #self.centralWidget.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        #self.setCentralWidget(self.centralWidget)
+
+
+
         self._createActions()
         self._createMenuBar()
         self._createToolBars()
+
+        
+      
+        #self.txtTextoEditado.move(550, 100)
+        #self.txtTextoEditado.setFixedHeight(800)
+        #self.txtTextoEditado.setFixedWidth(500)
+        #self.txtTextoEditado.setDisabled(True)
 
         # Uncomment the call to ._createContextMenu() below to create a context
         # menu using menu policies. To test this out, you also need to
         # comment .contextMenuEvent() and uncomment ._createContextMenu()
 
         # self._createContextMenu()
-
+        NombreA  = ""
         self._connectActions()
         self._createStatusBar()
 
@@ -48,9 +81,12 @@ class Window(QMainWindow):
         menuBar.addMenu(fileMenu)
         fileMenu.addAction(self.newAction)
         fileMenu.addAction(self.openAction)
+        
         # Open Recent submenu
         self.openRecentMenu = fileMenu.addMenu("Abrir recientes")
         fileMenu.addAction(self.saveAction)
+
+
         # Separator
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAction)
@@ -80,9 +116,16 @@ class Window(QMainWindow):
         # Edit toolbar
         editToolBar = QToolBar("Editar", self)
         self.addToolBar(editToolBar)
+
+        ejecutar = QAction(QIcon("Ejecutar.bmp"),"Ejecutar",self)
+        editToolBar.addAction(ejecutar)
+        ejecutar.triggered.connect(self.Ejecutar)
+
         editToolBar.addAction(self.copyAction)
         editToolBar.addAction(self.pasteAction)
         editToolBar.addAction(self.cutAction)
+       
+       
         # Widgets
         #self.fontSizeSpinBox = QSpinBox()
         #self.fontSizeSpinBox.setFocusPolicy(Qt.NoFocus)
@@ -101,8 +144,11 @@ class Window(QMainWindow):
         self.newAction = QAction(self)
         self.newAction.setText("&Nuevo")
         self.newAction.setIcon(QIcon(":file-new.svg"))
+
         self.openAction = QAction(QIcon(":file-open.svg"), "&Abrir...", self)
+
         self.saveAction = QAction(QIcon(":file-save.svg"), "&Guardar", self)
+
         self.exitAction = QAction("&Salir", self)
         # String-based key sequences
         self.newAction.setShortcut("Ctrl+N")
@@ -139,7 +185,7 @@ class Window(QMainWindow):
 
     def contextMenuEvent(self, event):
         # Context menu
-        menu = QMenu(self.centralWidget)
+        menu = QMenu(self.txtTextoEditado)
         # Populating the menu with actions
         menu.addAction(self.newAction)
         menu.addAction(self.openAction)
@@ -164,6 +210,7 @@ class Window(QMainWindow):
         self.copyAction.triggered.connect(self.copyContent)
         self.pasteAction.triggered.connect(self.pasteContent)
         self.cutAction.triggered.connect(self.cutContent)
+        
         # Connect Help actions
         self.helpContentAction.triggered.connect(self.helpContent)
         self.aboutAction.triggered.connect(self.about)
@@ -173,35 +220,84 @@ class Window(QMainWindow):
     # Slots
     def newFile(self):
         # Logic for creating a new file goes here...
-        self.centralWidget.setText("<b>Archivo > Nuevo</b> click")
+        self.txtTextoEditado.setText("<b>Archivo > Nuevo</b> click")
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","All Files (*);;Archivos Atón (*.aton)", options=options)
+        if fileName:
+            global NombreA
+            NombreA = fileName
+            with open (fileName, "w") as archivo: #Creamos el archivo
+                archivo.write("")
+                #f.close()
+            QMessageBox.about(self, "Accion exitosa", "El archivo se creo exitosamente")
+
 
     def openFile(self):
         # Logic for opening an existing file goes here...
-        self.centralWidget.setText("<b>Archivo > Abrir...</b> click")
+        #self.txtTextoEditado.setText("<b>Archivo > Abrir...</b> click")
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        file, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Archivos Atón (*.aton)", options=options)
+        if file:
+            print(file)
+            global NombreA
+            NombreA = file
+            
+            with open(file, "r") as archivo:
+                contenido = archivo.read()
+            self.txtTextoEditado.setText(contenido)
 
     def saveFile(self):
         # Logic for saving a file goes here...
-        self.centralWidget.setText("<b>Archivo > Guardar</b> click")
+        #self.txtTextoEditado.setText("<b>Archivo > Guardar</b> click")
+        #options = QFileDialog.Options()
+        #options |= QFileDialog.DontUseNativeDialog
+        #fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","All Files (*);;Archivos Atón (*.aton)", options=options)
+        #if fileName:
+        #    print(fileName)
+        #    print("la variable global tiene",NombreA)
+            with open (NombreA, "w") as archivo: #Creamos el archivo
+                archivo.writelines(self.txtTextoEditado.toPlainText())
+                #f.close()
+            QMessageBox.about(self, "Accion exitosa", "El archivo se guardo exitosamente")
+
+
+    def Ejecutar(self):
+        lexer = BasicLexer()
+        parser = BasicParser()
+        env = {}
+        with open (NombreA, "r") as archivo:
+            linea = archivo.readline()
+            contadorL = 1
+            while linea:
+                tree = parser.parse(lexer.tokenize(linea))
+                BasicExecute(tree,env)
+                linea = archivo.readline()
+                contadorL+=1
+        print("Variable global ",ResultadoF.Resultado)
+        inst = Ventana()
+        inst.exec_()
 
     def copyContent(self):
         # Logic for copying content goes here...
-        self.centralWidget.setText("<b>Editar > Copiar</b> click")
+        self.txtTextoEditado.setText("<b>Editar > Copiar</b> click")
 
     def pasteContent(self):
         # Logic for pasting content goes here...
-        self.centralWidget.setText("<b>Editar > Pegar</b> click")
+        self.txtTextoEditado.setText("<b>Editar > Pegar</b> click")
 
     def cutContent(self):
         # Logic for cutting content goes here...
-        self.centralWidget.setText("<b>Editar > Cortar</b> click")
+        self.txtTextoEditado.setText("<b>Editar > Cortar</b> click")
 
     def helpContent(self):
         # Logic for launching help goes here...
-        self.centralWidget.setText("<b>Ayuda > Contenido de ayuda...</b> click")
+        self.txtTextoEditado.setText("<b>Ayuda > Contenido de ayuda...</b> click")
 
     def about(self):
         # Logic for showing an about dialog content goes here...
-        self.centralWidget.setText("<b>Ayuda > Acerca de...</b> click")
+        self.txtTextoEditado.setText("<b>Ayuda > Acerca de...</b> click")
 
     def populateOpenRecent(self):
         # Step 1. Remove the old options from the menu
@@ -218,11 +314,12 @@ class Window(QMainWindow):
 
     def openRecentFile(self, filename):
         # Logic for opening a recent file goes here...
-        self.centralWidget.setText(f"<b>{filename}</b> Abriendo")
+        self.txtTextoEditado.setText(f"<b>{filename}</b> Abriendo")
 
     def getWordCount(self):
         # Logic for computing the word count goes here...
         return 42
+
 
 
 if __name__ == "__main__":
@@ -233,3 +330,5 @@ if __name__ == "__main__":
     win.show()
     # Run the event loop
     sys.exit(app.exec_())
+
+

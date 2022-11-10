@@ -1,0 +1,7 @@
+a=5
+b=7
+c=a SUMA b
+c
+d="hola mundo"
+d
+FOR x=1 TO 10 THEN x

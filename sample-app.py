@@ -25,7 +25,7 @@ class Ventana(QDialog):
 	def __init__(self):
 		QDialog.__init__(self)
 		self.resize(200, 200)
-		print("En resultado hay", ResultadoF.Resultado)
+		#print("En resultado hay", ResultadoF.Resultado)
 		self.txtcmd = QTextEdit(self)
 		self.txtcmd.setText(ResultadoF.Resultado)
 		self.txtcmd.setDisabled(True)
@@ -136,7 +136,8 @@ class Window(QMainWindow):
         # Temporary message
         self.statusbar.showMessage("Listos para programar", 3000)
         # Permanent widget
-        self.wcLabel = QLabel(f"{self.getWordCount()} Palabras escritas")
+        print("reultadito "+ResultadoF.Resultado)
+        self.wcLabel = QLabel(f"{ResultadoF.Resultado} Palabras escritas")
         self.statusbar.addPermanentWidget(self.wcLabel)
 
     def _createActions(self):
@@ -240,7 +241,7 @@ class Window(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         file, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Archivos Atón (*.aton)", options=options)
         if file:
-            print(file)
+           # print(file)
             global NombreA
             NombreA = file
             
@@ -275,7 +276,7 @@ class Window(QMainWindow):
                 BasicExecute(tree,env)
                 linea = archivo.readline()
                 contadorL+=1
-        print("Variable global ",ResultadoF.Resultado)
+       # print("Variable global ",ResultadoF.Resultado)
         inst = Ventana()
         inst.exec_()
 

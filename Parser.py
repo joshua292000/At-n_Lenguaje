@@ -1,15 +1,9 @@
-# SLY (Sly Lex-Yacc)
-
-# Copyright (C) 2016-2019
-# David M. Beazley (Dabeaz LLC)
-# All rights reserved.
 
 from sly import Parser
 from Lexer import BasicLexer
-
-
+import Lexer as lex
+ErrorT=""
 class BasicParser(Parser):
-	#tokens are passed from lexer to parser
 	tokens = BasicLexer.tokens
 
 	precedence = (
@@ -20,6 +14,17 @@ class BasicParser(Parser):
 
 	def __init__(self):
 		self.env = { }
+
+	def error(self, p):
+			global ErrorT	
+			if p:
+		
+				ErrorT= ErrorT + "Error de sintaxis en el token = "+ p.type+", en la linea "+str(lex.NumLinea+1)+'\n'
+	
+				self.errok()
+			else:
+				ErrorT=ErrorT + "Error de sintaxis en EOF, en la linea "+str(lex.NumLinea+1)+'\n'
+			
 
 	@_('')
 	def statement(self, p):
@@ -76,9 +81,21 @@ class BasicParser(Parser):
 	def expr(self, p):
 		return ('var', p.NAME)
 
+	@_('IMPRIMA NAME')
+	def expr(self, p):
+		return ('var', p.NAME)
+
+	@_('BOOLEAN')
+	def expr(self, p):
+		return ('str', p.BOOLEAN)
+
 	@_('NUMBER')
 	def expr(self, p):
 		return ('num', p.NUMBER)
+
+	@_('FLOAT')
+	def expr(self, p):
+		return ('num', p.FLOAT)
 
 
 	@_('NAME "["  "]" ')
@@ -120,9 +137,9 @@ class BasicParser(Parser):
 	def expr(self,p):
 		return ('forA', p.var_assign, p.expr0, p.expr1, p.expr2)
 
-	@_('MIENTRAS expr MENORQUE expr ENTONCES statement')
+	@_('MIENTRAS NAME MENORQUE expr ENTONCES statement')
 	def expr(self,p):
-		return ('while', p.expr0, p.expr1, p.statement)
+		return ('while', p.NAME, p.expr, p.statement)
 
 	@_('CASOS expr ENTONCES')
 	def expr(self,p):
@@ -132,13 +149,23 @@ class BasicParser(Parser):
 	def expr(self,p):
 		return ('ES',p.expr, p.statement)
 
-	@_('SI expr MAYORQUE expr ENTONCES statement')
+	@_('SI NAME MAYORQUE expr ENTONCES statement')
 	def expr(self,p):
-		return ('if', p.expr0, p.expr1,p.statement)
+		return ('if', p.NAME, p.expr,p.statement)
+
+
+	@_('SI NAME MAYORIGUAL expr ENTONCES statement')
+	def expr(self,p):
+		return ('ifmayorigual', p.NAME, p.expr,p.statement)
+	
 
 	@_('SI NAME MENORQUE expr ENTONCES statement')
 	def expr(self,p):
-		return ('ifmenor', p.NAME, p.expr,p.statement)
+		return ('ifmenor', p.NAME, p.expr, p.statement)
+
+	@_('SI NAME MENORIGUAL expr ENTONCES statement')
+	def expr(self,p):
+		return ('ifmenorigual', p.NAME, p.expr,p.statement)
 
 	@_('HAGA NAME "("  ")" ENTONCES statement ')
 	def expr(self,p):
@@ -156,3 +183,48 @@ class BasicParser(Parser):
 	@_('NAME "(" expr "," expr ")"')
 	def expr(self,p):
 		return ('LLamarFuncion2', p.NAME, p.expr0, p.expr1)
+
+	@_('SI NAME MAYORQUE expr ENTONCES statement SINO ENTONCES statement ')
+	def expr(self,p):
+		return ('ifelse', p.NAME, p.expr,p.statement0, p.statement1)
+	
+	@_('SI NAME MENORQUE expr ENTONCES statement SINO ENTONCES statement ')
+	def expr(self,p):
+		return ('ifelse2', p.NAME, p.expr,p.statement0, p.statement1)
+
+	@_('SI NAME MENORIGUAL expr ENTONCES statement SINO ENTONCES statement ')
+	def expr(self,p):
+		return ('ifelse3', p.NAME, p.expr,p.statement0, p.statement1)
+
+	@_('SI NAME MAYORIGUAL expr ENTONCES statement SINO ENTONCES statement ')
+	def expr(self,p):
+		return ('ifelse4', p.NAME, p.expr,p.statement0, p.statement1)
+
+	@_('SI NAME MAYORQUE expr O NAME MENORQUE expr ENTONCES statement SINO ENTONCES statement ')
+	def expr(self,p):
+		return ('ifelsecondi', p.NAME0, p.expr0, p.NAME1, p.expr1, p.statement0, p.statement1)
+
+	@_('SI NAME MENORQUE expr O NAME MAYORQUE expr ENTONCES statement SINO ENTONCES statement ')
+	def expr(self,p):
+		return ('ifelsecondi2', p.NAME0, p.expr0, p.NAME1, p.expr1, p.statement0, p.statement1)
+
+	@_('SI NAME MAYORQUE expr Y NAME MENORQUE expr ENTONCES statement SINO ENTONCES statement ')
+	def expr(self,p):
+		return ('ifelsecondi3', p.NAME0, p.expr0, p.NAME1, p.expr1, p.statement0, p.statement1)
+
+	@_('SI NAME MENORQUE expr Y NAME MAYORQUE expr ENTONCES statement SINO ENTONCES statement ')
+	def expr(self,p):
+		return ('ifelsecondi4', p.NAME0, p.expr0, p.NAME1, p.expr1, p.statement0, p.statement1)
+
+	@_('SI NAME IGUAL expr ENTONCES statement SINO ENTONCES statement ')
+	def expr(self,p):
+		return ('ifelseigual', p.NAME, p.expr,p.statement0, p.statement1)
+
+	@_('SI NAME IGUAL expr ENTONCES statement')
+	def expr(self,p):
+		return ('ifIGUAL', p.NAME, p.expr, p.statement)
+
+	
+	@_('NAME "[" expr "," expr "," expr "]" "[" expr "," expr "," expr "]" ')
+	def var_assign(self, p):
+		return ('Matriz', p.NAME, p.expr0, p.expr1, p.expr2,p.expr3, p.expr4, p.expr5) 

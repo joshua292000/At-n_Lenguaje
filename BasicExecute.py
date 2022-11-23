@@ -18,7 +18,6 @@ class BasicExecute():
 	def __init__(self, tree, env):
 		self.env = env
 		result = self.walkTree(tree)
-
 		if result is not None and isinstance(result, int):
 			global Resultado
 			Resultado += str(result) + '\n'
@@ -54,13 +53,13 @@ class BasicExecute():
 				self.walkTree(node[1])
 				self.walkTree(node[2])
 				
-
+#-----------------------------------Ve si la variable es int o string---------------------------------------------
 		if node[0] == 'num':
 			return node[1]
 
 		if node[0] == 'str':
 			return node[1]
-
+#-----------------------------------Busca que operacion matematica hacer-------------------------------------------
 		if node[0] == 'add':
 			return self.walkTree(node[1]) + self.walkTree(node[2])
 		elif node[0] == 'sub':
@@ -68,16 +67,11 @@ class BasicExecute():
 		elif node[0] == 'mul':
 			return self.walkTree(node[1]) * self.walkTree(node[2])
 		elif node[0] == 'div':
-			print("division ", self.walkTree(node[1]) / self.walkTree(node[2]))
 			return self.walkTree(node[1]) / self.walkTree(node[2])
 
 		if node[0] == 'var_assign':
 			self.env[node[1]] = self.walkTree(node[2])
 			return node[1]
-
-		#if node[0] == 'func':
-			#self.env[node[1]] = self.walkTree(node[2])
-			#return node[1]
 
 		
 		if node[0] == 'ArregloV':
@@ -99,10 +93,8 @@ class BasicExecute():
 
 		if node[0] == 'var':
 			try:
-				print("variable", self.env[node[1]])
 				return self.env[node[1]]
 			except LookupError:
-				#print("Undefined variable '"+node[1]+"' found!")
 				return 0
 
 		if node[0] == 'for_loop_setup':
@@ -117,7 +109,6 @@ class BasicExecute():
 			valores = []
 			valor = node[1]
 			valor2 = node[3]
-			print("Nodo 3", valor2[1])
 			for x in range(self.walkTree(valor[2]),self.walkTree(node[2])):
 				self.walkTree(node[3]).append(x)
 			return node[3]
@@ -125,21 +116,21 @@ class BasicExecute():
 		
 		if node[0] == 'while':
 			valoresW = []
-			i= self.walkTree(node[1])
+			i=  self.env[node[1]] 
 			while i < self.walkTree(node[2]):
 				valoresW.append(i)
 				i+=1
 			
-			Resultado+=str(valoresW) + '\n'
+			#Resultado+=str(valoresW) + '\n'
 			return valoresW
 
 
 		if node[0] == 'CASOS':
 			SWith =self.walkTree(node[1])
-			return 0
+			return None
 		
 		if node[0] == 'ES':
-			res = 0
+			res = None
 			valor = SWith
 			valor2 = self.walkTree(node[1])
 			if valor== valor2:
@@ -148,8 +139,7 @@ class BasicExecute():
 
 		if node[0] == 'if':
 			valores = []
-
-			if self.walkTree(node[1]) > self.walkTree(node[2]):
+			if self.env[node[1]]  > self.walkTree(node[2]):
 				return self.walkTree(node[3])
 		
 		elif node[0] == 'ifmenor':
@@ -157,13 +147,29 @@ class BasicExecute():
 
 			if self.env[node[1]] < self.walkTree(node[2]):
 				return self.walkTree(node[3])
+
+		elif node[0] == 'ifmayorigual':
+			valores = []
+
+			if self.env[node[1]] >= self.walkTree(node[2]):
+				return self.walkTree(node[3])
+
+		elif node[0] == 'ifmenorigual':
+			valores = []
+
+			if self.env[node[1]] <= self.walkTree(node[2]):
+				return self.walkTree(node[3])
+
+		elif node[0] == 'ifIGUAL':
+			valores = []
+
+			if self.env[node[1]] == self.walkTree(node[2]):
+				return self.walkTree(node[3])
 		
 		if node[0] == 'Funcion':
 			func = node[1],node[2]
 
 		if node[0] == 'LLamarFuncion':
-			print("nodo ", node[1])
-			print("func ", func[0])
 			if node[1] == func[0]:
 				return self.walkTree(func[1])
 			else:
@@ -174,8 +180,6 @@ class BasicExecute():
 			func = node[1],node[2],node[3],node[4]
 
 		if node[0] == 'LLamarFuncion2':
-			print("nodo ", node)
-			print("func ", func[0])
 			if node[1] == func[0]:
 				gua= func[3]			
 				if gua[0] == 'add':
@@ -188,3 +192,81 @@ class BasicExecute():
 					return self.walkTree(node[2]) / self.walkTree(node[3]) 
 			else:
 				return 0
+
+
+		if node[0] == 'ifelse':
+			valores = []
+
+			if self.env[node[1]] > self.walkTree(node[2]):
+				return self.walkTree(node[3])
+			else:
+				return self.walkTree(node[4])
+
+		if node[0] == 'ifelse2':
+			valores = []
+
+			if self.env[node[1]] < self.walkTree(node[2]):
+				return self.walkTree(node[3])
+			else:
+				return self.walkTree(node[4])
+
+		if node[0] == 'ifelse3':
+			valores = []
+
+			if self.env[node[1]] <= self.walkTree(node[2]):
+				return self.walkTree(node[3])
+			else:
+				return self.walkTree(node[4])
+
+		if node[0] == 'ifelse4':
+			valores = []
+
+			if self.env[node[1]] >= self.walkTree(node[2]):
+				return self.walkTree(node[3])
+			else:
+				return self.walkTree(node[4])
+
+		if node[0] == 'ifelseigual':
+			valores = []
+
+			if self.env[node[1]] == self.walkTree(node[2]):
+				return self.walkTree(node[3])
+			else:
+				return self.walkTree(node[4])
+
+		if node[0] == 'ifelsecondi':
+			valores = []
+
+			if self.env[node[1]] > self.walkTree(node[2]) or self.env[node[3]] < self.walkTree(node[4]) :
+				return self.walkTree(node[5])
+			else:
+				return self.walkTree(node[6])
+
+		if node[0] == 'ifelsecondi2':
+			valores = []
+
+			if self.env[node[1]] < self.walkTree(node[2]) or self.env[node[3]] > self.walkTree(node[4]) :
+				return self.walkTree(node[5])
+			else:
+				return self.walkTree(node[6])
+
+		if node[0] == 'ifelsecondi3':
+			valores = []
+
+			if self.env[node[1]] > self.walkTree(node[2]) and self.env[node[3]] < self.walkTree(node[4]) :
+				return self.walkTree(node[5])
+			else:
+				return self.walkTree(node[6])
+
+		if node[0] == 'ifelsecondi4':
+			valores = []
+
+			if self.env[node[1]] < self.walkTree(node[2]) and self.env[node[3]] > self.walkTree(node[4]) :
+				return self.walkTree(node[5])
+			else:
+				return self.walkTree(node[6])
+
+
+		if node[0] == 'Matriz':
+			self.env[node[1]] = [[self.walkTree(node[2]),self.walkTree(node[3]),self.walkTree(node[4])],[self.walkTree(node[5]),self.walkTree(node[6]),self.walkTree(node[7])],]
+			return node[1]

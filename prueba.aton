@@ -1,6 +1,8 @@
 INICIO
- a=5
- b=4
- c=a SUM b
- c
+
+a=10
+b=5
+
+SI a > 6 ENTONCES IMPRIMA a SINO ENTONCES IMPRIMA b
+
 FIN

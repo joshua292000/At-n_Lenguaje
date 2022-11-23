@@ -1,0 +1,10 @@
+INICIO
+HAGA operacion(num1, num2) ENTONCES num1 SUM num2
+
+operacion(5,10)
+
+arreglo[]
+PARA i=1 HASTA 20 ENTNCES arreglo AGREGAR(i)
+IMPRIMA arreglo
+
+FIN
